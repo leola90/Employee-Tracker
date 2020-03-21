@@ -77,6 +77,9 @@ function runPrompt() {
 }
 
 function employeeSearch() {
+  console.log("Viewing all employee")
+  
+  var query = 
 
 }
 
