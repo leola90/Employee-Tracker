@@ -1,6 +1,5 @@
 var mysql = require("mysql"); 
 const inquirer = require("inquirer");
-//require("console.table");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -12,6 +11,7 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) throw err;
+    console.log("connected as id " + connection.threadId + "\n");
     runPrompt();
   });
 
@@ -20,7 +20,7 @@ function runPrompt() {
     inquirer
     .prompt({
       name: "action",
-      type: "list",
+      type: "rawlist",
       message: "What would you like to do?",
       choices: [
         "View All Employees",
@@ -34,7 +34,7 @@ function runPrompt() {
         "exit"
       ]
     })
-    .then(function(answer) {
+    .then(answer => {
       switch (answer.action) {
       case "View All Employees":
         employeeSearch();
@@ -77,18 +77,25 @@ function runPrompt() {
 }
 
 function employeeSearch() {
-  console.log("Viewing all employee")
-  
-  var query = 
+  connection.query("SELECT * FROM employee", function (err, data) {
+    console.table(data);
+    runPrompt();
+  })
 
 }
 
 function departmentSearch() {
-    
+  connection.query("SELECT * FROM department", function (err, data) {
+    console.table(data);
+    runPrompt();
+  })
 }
 
 function managerSearch() {
-    
+  connection.query("SELECT * FROM role", function (err, data) {
+    console.table(data);
+    runPrompt();
+  })
 }
 
 function employeeAdd() {
