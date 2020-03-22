@@ -98,8 +98,53 @@ function managerSearch() {
   })
 }
 
+//If add employee is selected, inquirer for first_name, last_name, role_id, and manager_id
 function employeeAdd() {
-    
+  inquirer.prompt([
+   {
+    name: "firstName",
+    type: "input",
+    message: "Enter employee first name:"
+   },
+   {
+    name: "lastName",
+    type: "input",
+    message: "Enter employee last name:"
+   },
+   {
+    name: "roleId",
+    type: "input",
+    message: "Enter employee role ID:",
+    //Added validate function to make sure a value is entered 
+    validate: function(value){
+      if (value === "") {
+        return "Please enter a value for role ID";
+      }
+      return value !== "";
+    }
+   },
+   {
+    name: "managerId",
+    type: "confirm",
+    message: "Does this employee has a manager ID?",
+    validate: function(value) {
+      if (value === yes) {
+        return "Enter employee manager ID:";
+      }
+      return "null";
+    }
+   },
+   //Then insert/update the following information to employee database
+   //If there's an error, throw error, otherwise let us know it's successfully updated
+  ]).then(answer => {
+    connection.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.roleId, answer.managerId], function(err, data) {
+      if (err) {
+        throw err;
+      } 
+      console.table("Successfully added employee"); 
+      runPrompt();
+    })
+  })
 }
 
 function employeeRemove() {
@@ -117,4 +162,3 @@ function employeeUpdateRoster() {
 function employeeUpdateManager() {
     
 }
-
