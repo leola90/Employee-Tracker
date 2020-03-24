@@ -91,8 +91,9 @@ function employeeSearch() {
 }
 
 function departmentSearch() {
-  var query = `SELECT department.id, department.name AS department FROM department
-  `
+  var query = `SELECT employee.id, employee.first_name, employee.last_name, department.name AS department FROM employee employee
+  LEFT JOIN role role ON employee.role_id = role.id
+  LEFT JOIN department department ON department.id = role.department_id`
   connection.query(query, function (err, data) {
     if (err) throw err;
     console.table(data);
@@ -101,7 +102,12 @@ function departmentSearch() {
 }
 
 function managerSearch() {
-  connection.query("SELECT first_name, last_name, manager_id FROM employee", function (err, data) {
+  var query = `SELECT employee.id, employee.first_name, employee.last_name, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee employee
+  LEFT JOIN role role ON employee.role_id = role.id
+  LEFT JOIN department department ON department.id = role.department_id
+  LEFT JOIN employee manager ON manager.id = employee.manager_id`
+  connection.query(query, function (err, data) {
+    if (err) throw err;
     console.table(data);
     runPrompt();
   })
