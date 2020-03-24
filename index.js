@@ -20,7 +20,7 @@ function runPrompt() {
     inquirer
     .prompt({
       name: "action",
-      type: "rawlist",
+      type: "list",
       message: "What would you like to do?",
       choices: [
         "View All Employees",
@@ -77,29 +77,38 @@ function runPrompt() {
 }
 
 function employeeSearch() {
-  connection.query("SELECT * FROM employee", function (err, data) {
+  //Joining tables together to allow user to see all information about Employees
+  var query =   `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee employee
+  LEFT JOIN role role ON employee.role_id = role.id
+  LEFT JOIN department department ON department.id = role.department_id
+  LEFT JOIN employee manager ON manager.id = employee.manager_id`
+  
+  connection.query(query, function (err, data) {
+    if (err) throw err;
     console.table(data);
     runPrompt();
   })
-
 }
 
 function departmentSearch() {
-  connection.query("SELECT * FROM department", function (err, data) {
+  var query = `SELECT department.id, department.name AS department FROM department
+  `
+  connection.query(query, function (err, data) {
+    if (err) throw err;
     console.table(data);
     runPrompt();
   })
 }
 
 function managerSearch() {
-  connection.query("SELECT * FROM role", function (err, data) {
+  connection.query("SELECT first_name, last_name, manager_id FROM employee", function (err, data) {
     console.table(data);
     runPrompt();
   })
 }
 
 //If add employee is selected, inquirer for first_name, last_name, role_id, and manager_id
-function employeeAdd() {
+function employeeAdd() { 
   inquirer.prompt([
    {
     name: "firstName",
@@ -113,42 +122,58 @@ function employeeAdd() {
    },
    {
     name: "roleId",
-    type: "input",
-    message: "Enter employee role ID:",
-    //Added validate function to make sure a value is entered 
-    validate: function(value){
-      if (value === "") {
-        return "Please enter a value for role ID";
-      }
-      return value !== "";
-    }
+    type: "list",
+    message: "What is the employee's role?",
+    choices: [
+      "Sales Lead",
+      "Salesperson",
+      "Lead Engineer",
+      "Software Engineer",
+      "Accountant",
+      "Legal Team Lead",
+      "Lawyer"
+    ]
    },
    {
     name: "managerId",
-    type: "confirm",
-    message: "Does this employee has a manager ID?",
-    validate: function(value) {
-      if (value === yes) {
-        return "Enter employee manager ID:";
-      }
-      return "null";
-    }
-   },
+    type: "list",
+    message: "Who is the employee's manager?",
+    choices: [
+      "None",
+      "John Doe",
+      "Mike Chan",
+      "Ashley Rodriguez",
+      "Kevin Tupik",
+      "Malia Brown",
+      "Sarah Lourd",
+      "Tom Allen",
+      "Tammer Galal"
+    ]
+   }
    //Then insert/update the following information to employee database
    //If there's an error, throw error, otherwise let us know it's successfully updated
   ]).then(answer => {
-    connection.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.roleId, answer.managerId], function(err, data) {
-      if (err) {
-        throw err;
-      } 
+  
+      var query = "INSERT INTO employee SET ?"
+      connection.query(query, [answer.firstName, answer.lastName, answer.roleId, answer.manangerId], function (err, res) {
+          if (err) {
+            throw err;
+          }  
+      })
       console.table("Successfully added employee"); 
       runPrompt();
     })
-  })
+  
 }
 
 function employeeRemove() {
-    
+  inquirer.prompt([
+    {
+     name: "remoteEmployee",
+     type: "input",
+     message: "Which employee would you like to remove?"
+    }
+  ])
 }
 
 function employeeUpdate() {
